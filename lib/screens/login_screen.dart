@@ -20,12 +20,10 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
-                child: const Text(
-                  'Welcome',
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 30),
+                child: const Image(
+                  image: AssetImage('assets/mobifone_logo.png'),
+                  width: 200,
+                  height: 50,
                 )),
             Container(
                 alignment: Alignment.center,
@@ -55,17 +53,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () {
-                //forgot password screen
-              },
-              child: const Text(
-                'Forgot Password',
+
+            // space for forgot password
+            Container(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: TextButton(
+                onPressed: () {},
+                child: const Text(
+                  'Forgot Password?',
+                ),
               ),
             ),
+
             Container(
                 height: 50,
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: ElevatedButton(
                   child: const Text('Login'),
                   onPressed: () {
@@ -73,21 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     print(passwordController.text);
                   },
                 )),
-            Row(
-              children: <Widget>[
-                const Text('Does not have account?'),
-                TextButton(
-                  child: const Text(
-                    'Sign in',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  onPressed: () {
-                    //signup screen
-                  },
-                )
-              ],
-              mainAxisAlignment: MainAxisAlignment.center,
-            ),
           ],
         ));
   }
