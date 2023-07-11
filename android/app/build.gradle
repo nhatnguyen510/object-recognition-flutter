@@ -27,7 +27,8 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace "com.example.flutter_face_detection_app"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 33
+    buildToolsVersion "30.0.2"
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -41,6 +42,11 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    aaptOptions {
+        noCompress 'tflite'
+        noCompress 'lite'
     }
 
     defaultConfig {
@@ -69,4 +75,8 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
 }
+
+
+

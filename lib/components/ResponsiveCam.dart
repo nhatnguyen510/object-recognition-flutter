@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite/tflite.dart';
+import 'dart:async';
 
 class CameraWatcher with ChangeNotifier {
   bool ready = false;
@@ -29,7 +30,7 @@ class CameraWatcher with ChangeNotifier {
         await initCam();
       }
       _camera = _cameras.first;
-      _controller = CameraController(_camera, ResolutionPreset.high);
+      _controller = CameraController(_camera, ResolutionPreset.medium);
       await _controller.initialize();
       mounted = true;
       notifyListeners();
@@ -55,8 +56,9 @@ class OnEyes extends StatefulWidget {
 class OnEyesState extends State<OnEyes> {
   var listener = CameraWatcher();
   bool isDetecting = false;
-  String recognizedObject = '';
+  String recognizedObject = 'None';
   late CameraController _controller;
+  int _imageCount = 0;
 
   @override
   void initState() {
@@ -66,7 +68,9 @@ class OnEyesState extends State<OnEyes> {
       listener.mountCam().then((_) {
         _controller = listener.controller;
         _controller.startImageStream((image) {
-          if (!isDetecting) {
+          _imageCount++;
+          if (!isDetecting && _imageCount % 60 == 0) {
+            _imageCount = 0;
             isDetecting = true;
             runModelOnFrame(image);
           }
