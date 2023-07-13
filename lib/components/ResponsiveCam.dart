@@ -1,8 +1,10 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_face_detection_app/components/data_parse.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite/tflite.dart';
 import 'dart:async';
+import 'dart:io';
 
 class CameraWatcher with ChangeNotifier {
   bool ready = false;
@@ -35,7 +37,7 @@ class CameraWatcher with ChangeNotifier {
       mounted = true;
       notifyListeners();
     } on CameraException catch (e) {
-      print('Error initializing camera: $e');
+      debugPrint('Error initializing camera: $e');
     }
   }
 
@@ -60,10 +62,13 @@ class OnEyesState extends State<OnEyes> {
   late CameraController _controller;
   int _imageCount = 0;
 
+  late Recognizer? _recognizer;
+
   @override
   void initState() {
     super.initState();
-    loadModel();
+    // loadModel();
+    _loadRecognizer();
     listener.initCam().then((_) {
       listener.mountCam().then((_) {
         _controller = listener.controller;
@@ -77,6 +82,13 @@ class OnEyesState extends State<OnEyes> {
         });
       });
     });
+  }
+
+  Future<void> _loadRecognizer() async {
+    final recognizer = await Recognizer.loadWith(
+        labelsFile: 'assets/labels.txt',
+        modelFile: 'assets/mobilenet_v1_1.0_224.tflite');
+    _recognizer = recognizer;
   }
 
   Future<void> runModelOnFrame(CameraImage image) async {
