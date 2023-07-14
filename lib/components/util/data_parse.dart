@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:flutter_face_detection_app/components/ClassifierModel.dart';
+import 'package:flutter_face_detection_app/components/util/ClassifierModel.dart';
 
 typedef ModelLabels = List<String>;
 
@@ -35,11 +35,11 @@ class Recognizer {
   }
 
   static Future<ModelLabels> _loadLabels(String labelsFileName) async {
-    final labels =
-        File('$labelsFileName').readAsStringSync().split('\n').toList();
+    final fileString = await rootBundle.loadString('$labelsFileName');
+    final extracted = fileString.split('\n');
     var list = <String>[];
-    for (var i = 0; i < labels.length; i++) {
-      var entry = labels[i].trim();
+    for (var i = 0; i < extracted.length; i++) {
+      var entry = extracted[i].trim();
       if (entry.length > 0) list.add(entry);
     }
     debugPrint('Labels: $list');

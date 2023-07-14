@@ -1,10 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_face_detection_app/components/data_parse.dart';
+import 'package:flutter_face_detection_app/components/util/data_parse.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite/tflite.dart';
 import 'dart:async';
-import 'dart:io';
 
 class CameraWatcher with ChangeNotifier {
   bool ready = false;
