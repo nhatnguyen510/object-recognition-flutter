@@ -1,8 +1,14 @@
 import 'dart:async';
 
+import 'package:camera/camera.dart';
+import 'package:image/image.dart' as img_notWid;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_face_detection_app/components/util/converter.dart';
+import 'package:flutter_face_detection_app/components/util/ClassifierCategory.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:tflite_flutter_helper/tflite_flutter_helper.dart';
+import 'dart:math';
 import 'package:flutter_face_detection_app/components/util/ClassifierModel.dart';
 
 typedef ModelLabels = List<String>;
@@ -22,7 +28,7 @@ class Recognizer {
     required String modelFile,
   }) async {
     try {
-      // TODO: LOAD LABELS and MODEL
+      // LOAD LABELS and MODEL
       final labels = await _loadLabels(labelsFile);
       final model = await _loadModel(modelFile);
 
@@ -34,8 +40,50 @@ class Recognizer {
     return null;
   }
 
+  ClassifierCategory predict(CameraImage image) {
+    // TODO: _preProcessInput
+    final inputImage = _preProcessImg(image);
+
+    debugPrint(
+      'Pre-processed image: ${inputImage.width}x${image.height}, '
+      'size: ${inputImage.buffer.lengthInBytes} bytes',
+    );
+
+    // TODO: run TF Lite
+    // #1
+    final outputBuffer = TensorBuffer.createFixedSize(
+      _Model.outputShape,
+      _Model.outputType,
+    );
+
+// #2
+    _Model.interpreter.run(inputImage.buffer, outputBuffer.buffer);
+    debugPrint('OutputBuffer: ${outputBuffer.getDoubleList()}');
+
+    // TODO: _postProcessOutput
+    final resultCategories = _postProcessOutput(outputBuffer);
+    final topResult = resultCategories.first;
+
+    debugPrint('Top category: $topResult');
+
+    return topResult;
+    // return ClassifierCategory('Unknown', 0);
+  }
+
+  TensorImage _preProcessImg(CameraImage image) {
+    try {
+      final data = convertYUV420toImageColor(image);
+      final processed = _preProcessInput(data);
+      return processed;
+    } catch (e) {
+      debugPrint('Failed at preprocessing!!!');
+      return TensorImage();
+    }
+    ;
+  }
+
   static Future<ModelLabels> _loadLabels(String labelsFileName) async {
-    final fileString = await rootBundle.loadString('$labelsFileName');
+    final fileString = await rootBundle.loadString(labelsFileName);
     final extracted = fileString.split('\n');
     var list = <String>[];
     for (var i = 0; i < extracted.length; i++) {
@@ -71,5 +119,57 @@ class Recognizer {
       inputType: inputType,
       outputType: outputType,
     );
+  }
+
+  TensorImage _preProcessInput(img_notWid.Image image) {
+    // #1
+    final inputTensor = TensorImage(_Model.inputType);
+    inputTensor.loadImage(image);
+
+    // #2
+    final minLength = min(inputTensor.height, inputTensor.width);
+    final cropOp = ResizeWithCropOrPadOp(minLength, minLength);
+
+    // #3
+    final shapeLength = _Model.inputShape[1];
+    final resizeOp = ResizeOp(shapeLength, shapeLength, ResizeMethod.BILINEAR);
+
+    // #4
+    final normalizeOp = NormalizeOp(127.5, 127.5);
+
+    // #5
+    final imageProcessor = ImageProcessorBuilder()
+        .add(cropOp)
+        .add(resizeOp)
+        .add(normalizeOp)
+        .build();
+
+    imageProcessor.process(inputTensor);
+
+    // #6
+    return inputTensor;
+  }
+
+  List<ClassifierCategory> _postProcessOutput(TensorBuffer outputBuffer) {
+    // #1
+    final probabilityProcessor = TensorProcessorBuilder().build();
+
+    probabilityProcessor.process(outputBuffer);
+
+    // #2
+    final labelledResult = TensorLabel.fromList(_Labels, outputBuffer);
+
+    // #3
+    final categoryList = <ClassifierCategory>[];
+    labelledResult.getMapWithFloatValue().forEach((key, value) {
+      final category = ClassifierCategory(key, value);
+      categoryList.add(category);
+      debugPrint('label: ${category.label}, score: ${category.score}');
+    });
+
+    // #4
+    categoryList.sort((a, b) => (b.score > a.score ? 1 : -1));
+
+    return categoryList;
   }
 }

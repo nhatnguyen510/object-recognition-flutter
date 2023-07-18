@@ -76,7 +76,8 @@ class OnEyesState extends State<OnEyes> {
           if (!isDetecting && _imageCount % 60 == 0) {
             _imageCount = 0;
             isDetecting = true;
-            runModelOnFrame(image);
+            _recognizer?.predict(image);
+            // runModelOnFrame(image);
           }
         });
       });

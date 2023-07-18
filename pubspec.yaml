@@ -39,6 +39,13 @@ dependencies:
   camera_windows: ^0.2.1+7
   tflite: ^1.1.2
   tflite_flutter: ^0.10.1
+  tflite_flutter_helper: 
+    path: packages/tflite_flutter_helper-master
+  image: ^3.3.0
+    # git:
+    #   url: https://github.com/filofan1/tflite_flutter_helper.git
+    #   ref: 783f15e5a87126159147d8ea30b98eea9207ac70
+
 
 dev_dependencies:
   flutter_test:
