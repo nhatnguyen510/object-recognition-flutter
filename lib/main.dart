@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_face_detection_app/components/ResponsiveCam.dart';
+import 'package:flutter_face_detection_app/components/user/ResponsiveCam.dart';
 import 'package:flutter_face_detection_app/controllers/navigation.dart';
 import 'package:provider/provider.dart';
 // import 'package:flutter_face_detection_app/screens/login_screen.dart';
